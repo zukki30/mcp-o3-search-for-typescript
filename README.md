@@ -1,0 +1,1 @@
+# mcp-o3-search-for-typescript
