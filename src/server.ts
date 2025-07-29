@@ -3,58 +3,42 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import config from './config.js';
+import { searchWithRetry } from './services/search.js';
+import { searchTool, validateSearchParams, formatSearchResults } from './tools/search.js';
 import { createLogger } from './utils/logger.js';
 
 const logger = createLogger('MCPSearchServer');
 
-function createSearchTool(): object {
-  return {
-    name: 'chatgpt_o3_search',
-    description: 'ChatGPT o3の検索機能を使用してWeb検索を実行します',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        query: {
-          type: 'string',
-          description: '検索クエリ',
-        },
-        limit: {
-          type: 'number',
-          description: '返す結果の最大数',
-          default: 10,
-          minimum: 1,
-          maximum: 50,
-        },
-        language: {
-          type: 'string',
-          description: '結果の言語（例: ja, en）',
-          default: 'auto',
-        },
-        timeframe: {
-          type: 'string',
-          description: '時間範囲フィルタ',
-          enum: ['recent', 'past_week', 'past_month', 'past_year'],
-        },
-      },
-      required: ['query'],
-    },
-  };
-}
-
 async function handleSearch(
   args: unknown,
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
-  logger.info('Handling search request', { args });
+  try {
+    logger.info('Handling search request', { args });
 
-  // 一時的な実装 - 後でSearchServiceに移譲
-  return {
-    content: [
-      {
-        type: 'text',
-        text: 'Search functionality will be implemented in the next phase. This is a placeholder response.',
-      },
-    ],
-  };
+    // パラメータの検証
+    const params = validateSearchParams(args);
+    logger.debug('Validated search parameters', { params });
+
+    // 検索の実行（リトライ付き）
+    const results = await searchWithRetry(params, config.maxRetries);
+    logger.info('Search completed', { resultCount: results.length });
+
+    // 結果のフォーマット
+    return formatSearchResults(results);
+  } catch (error) {
+    logger.error('Search failed', error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : '検索中に予期しないエラーが発生しました';
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `検索エラー: ${errorMessage}`,
+        },
+      ],
+    };
+  }
 }
 
 function setupServerHandlers(server: Server): void {
@@ -63,7 +47,7 @@ function setupServerHandlers(server: Server): void {
     logger.debug('Received tools list request');
 
     return {
-      tools: [createSearchTool()],
+      tools: [searchTool],
     };
   });
 
