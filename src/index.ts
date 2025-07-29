@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+
+import { MCPSearchServer } from './server.js';
+import { Logger } from './utils/logger.js';
+
+const logger = new Logger('Main');
+
+async function main(): Promise<void> {
+  try {
+    logger.info('Starting MCP O3 Search Server...');
+    
+    const server = new MCPSearchServer();
+    await server.start();
+    
+  } catch (error) {
+    logger.error('Failed to start server', error);
+    process.exit(1);
+  }
+}
+
+// プロセス終了シグナルの処理
+process.on('SIGINT', () => {
+  logger.info('Received SIGINT, shutting down gracefully...');
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  logger.info('Received SIGTERM, shutting down gracefully...');
+  process.exit(0);
+});
+
+// 未処理の例外をキャッチ
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled rejection', reason);
+  process.exit(1);
+});
+
+main().catch((error) => {
+  logger.error('Main function failed', error);
+  process.exit(1);
+});
