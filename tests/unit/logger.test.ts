@@ -11,18 +11,18 @@ vi.mock('../../src/config.js', () => ({
   },
 }));
 
-import { Logger } from '../../src/utils/logger.js';
+import { createLogger, type Logger } from '../../src/utils/logger.js';
 
 // console メソッドをモック
 const mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
 const mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-describe('Logger', () => {
+describe('createLogger', () => {
   let logger: Logger;
 
   beforeEach(() => {
-    logger = new Logger('TestContext');
+    logger = createLogger('TestContext');
     mockConsoleLog.mockClear();
     mockConsoleWarn.mockClear();
     mockConsoleError.mockClear();

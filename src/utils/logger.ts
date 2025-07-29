@@ -2,59 +2,63 @@ import config from '../config.js';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-export class Logger {
-  private context: string;
-  private logLevel: LogLevel;
+const logLevels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
 
-  constructor(context: string) {
-    this.context = context;
-    this.logLevel = config.logLevel as LogLevel;
+function shouldLog(level: LogLevel, currentLevel: LogLevel): boolean {
+  const currentLevelIndex = logLevels.indexOf(currentLevel);
+  const messageLevelIndex = logLevels.indexOf(level);
+  return messageLevelIndex >= currentLevelIndex;
+}
+
+function formatMessage(context: string, level: LogLevel, message: string, data?: unknown): string {
+  const timestamp = new Date().toISOString();
+  const prefix = `[${timestamp}] [${level.toUpperCase()}] [${context}]`;
+
+  if (data) {
+    const dataStr = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    return `${prefix} ${message}\n${dataStr}`;
   }
 
-  private shouldLog(level: LogLevel): boolean {
-    const levels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
-    const currentLevelIndex = levels.indexOf(this.logLevel);
-    const messageLevelIndex = levels.indexOf(level);
-    return messageLevelIndex >= currentLevelIndex;
-  }
+  return `${prefix} ${message}`;
+}
 
-  private formatMessage(level: LogLevel, message: string, data?: unknown): string {
-    const timestamp = new Date().toISOString();
-    const prefix = `[${timestamp}] [${level.toUpperCase()}] [${this.context}]`;
+export interface Logger {
+  debug: (message: string, data?: unknown) => void;
+  info: (message: string, data?: unknown) => void;
+  warn: (message: string, data?: unknown) => void;
+  error: (message: string, error?: unknown) => void;
+}
 
-    if (data) {
-      const dataStr = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-      return `${prefix} ${message}\n${dataStr}`;
-    }
+export function createLogger(context: string): Logger {
+  const logLevel = config.logLevel as LogLevel;
 
-    return `${prefix} ${message}`;
-  }
+  return {
+    debug: (message: string, data?: unknown): void => {
+      if (shouldLog('debug', logLevel)) {
+        console.log(formatMessage(context, 'debug', message, data));
+      }
+    },
 
-  debug(message: string, data?: unknown): void {
-    if (this.shouldLog('debug')) {
-      console.log(this.formatMessage('debug', message, data));
-    }
-  }
+    info: (message: string, data?: unknown): void => {
+      if (shouldLog('info', logLevel)) {
+        console.log(formatMessage(context, 'info', message, data));
+      }
+    },
 
-  info(message: string, data?: unknown): void {
-    if (this.shouldLog('info')) {
-      console.log(this.formatMessage('info', message, data));
-    }
-  }
+    warn: (message: string, data?: unknown): void => {
+      if (shouldLog('warn', logLevel)) {
+        console.warn(formatMessage(context, 'warn', message, data));
+      }
+    },
 
-  warn(message: string, data?: unknown): void {
-    if (this.shouldLog('warn')) {
-      console.warn(this.formatMessage('warn', message, data));
-    }
-  }
-
-  error(message: string, error?: unknown): void {
-    if (this.shouldLog('error')) {
-      const errorData =
-        error instanceof Error
-          ? { message: error.message, stack: error.stack, name: error.name }
-          : error;
-      console.error(this.formatMessage('error', message, errorData));
-    }
-  }
+    error: (message: string, error?: unknown): void => {
+      if (shouldLog('error', logLevel)) {
+        const errorData =
+          error instanceof Error
+            ? { message: error.message, stack: error.stack, name: error.name }
+            : error;
+        console.error(formatMessage(context, 'error', message, errorData));
+      }
+    },
+  };
 }

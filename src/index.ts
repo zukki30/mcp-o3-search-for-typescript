@@ -1,16 +1,14 @@
 #!/usr/bin/env node
 
-import { MCPSearchServer } from './server.js';
-import { Logger } from './utils/logger.js';
+import { startMCPSearchServer } from './server.js';
+import { createLogger } from './utils/logger.js';
 
-const logger = new Logger('Main');
+const logger = createLogger('Main');
 
 async function main(): Promise<void> {
   try {
     logger.info('Starting MCP O3 Search Server...');
-
-    const server = new MCPSearchServer();
-    await server.start();
+    await startMCPSearchServer();
   } catch (error) {
     logger.error('Failed to start server', error);
     process.exit(1);
