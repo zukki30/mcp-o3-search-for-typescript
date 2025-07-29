@@ -1,6 +1,7 @@
+import { beforeEach, afterAll, describe, it, expect, vi } from 'vitest';
+
 // モジュールのモック - configを最初にモック
-jest.mock('../../src/config.js', () => ({
-  __esModule: true,
+vi.mock('../../src/config.js', () => ({
   default: {
     openaiKey: 'test-key',
     model: 'gpt-4-o3',
@@ -13,9 +14,9 @@ jest.mock('../../src/config.js', () => ({
 import { Logger } from '../../src/utils/logger.js';
 
 // console メソッドをモック
-const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation();
-const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation();
-const mockConsoleError = jest.spyOn(console, 'error').mockImplementation();
+const mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+const mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 describe('Logger', () => {
   let logger: Logger;
