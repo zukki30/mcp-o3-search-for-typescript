@@ -65,7 +65,10 @@ export class AuthError extends Error {
 }
 
 export class SearchError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown,
+  ) {
     super(message);
     this.name = 'SearchError';
     this.cause = cause;
@@ -84,7 +87,10 @@ export class RateLimitError extends Error {
 }
 
 export class NetworkError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown,
+  ) {
     super(message);
     this.name = 'NetworkError';
     this.cause = cause;
@@ -92,7 +98,10 @@ export class NetworkError extends Error {
 }
 
 export class TimeoutError extends Error {
-  constructor(message: string, public readonly timeoutMs: number) {
+  constructor(
+    message: string,
+    public readonly timeoutMs: number,
+  ) {
     super(message);
     this.name = 'TimeoutError';
     this.timeoutMs = timeoutMs;

@@ -8,10 +8,9 @@ const logger = new Logger('Main');
 async function main(): Promise<void> {
   try {
     logger.info('Starting MCP O3 Search Server...');
-    
+
     const server = new MCPSearchServer();
     await server.start();
-    
   } catch (error) {
     logger.error('Failed to start server', error);
     process.exit(1);

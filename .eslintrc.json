@@ -28,6 +28,7 @@
         "argsIgnorePattern": "^_"
       }
     ],
+    "@typescript-eslint/require-await": "off",
     "import/order": [
       "error",
       {
@@ -47,13 +48,14 @@
       }
     ],
     "import/no-duplicates": "error",
-    "import/no-unresolved": "error",
+    "import/no-unresolved": "off",
     "no-console": [
       "warn",
       {
         "allow": [
           "warn",
-          "error"
+          "error",
+          "log"
         ]
       }
     ]

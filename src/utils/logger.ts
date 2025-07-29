@@ -21,12 +21,12 @@ export class Logger {
   private formatMessage(level: LogLevel, message: string, data?: unknown): string {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${level.toUpperCase()}] [${this.context}]`;
-    
+
     if (data) {
       const dataStr = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
       return `${prefix} ${message}\n${dataStr}`;
     }
-    
+
     return `${prefix} ${message}`;
   }
 
@@ -50,9 +50,10 @@ export class Logger {
 
   error(message: string, error?: unknown): void {
     if (this.shouldLog('error')) {
-      const errorData = error instanceof Error 
-        ? { message: error.message, stack: error.stack, name: error.name }
-        : error;
+      const errorData =
+        error instanceof Error
+          ? { message: error.message, stack: error.stack, name: error.name }
+          : error;
       console.error(this.formatMessage('error', message, errorData));
     }
   }

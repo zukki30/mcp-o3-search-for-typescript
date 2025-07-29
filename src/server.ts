@@ -1,9 +1,6 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { 
-  CallToolRequestSchema,
-  ListToolsRequestSchema 
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import config from './config.js';
 import { Logger } from './utils/logger.js';
@@ -14,7 +11,7 @@ export class MCPSearchServer {
 
   constructor() {
     this.logger = new Logger('MCPSearchServer');
-    
+
     this.server = new Server(
       {
         name: 'mcp-o3-search',
@@ -24,7 +21,7 @@ export class MCPSearchServer {
         capabilities: {
           tools: {},
         },
-      }
+      },
     );
 
     this.setupHandlers();
@@ -39,7 +36,7 @@ export class MCPSearchServer {
     // ツール一覧の提供
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       this.logger.debug('Received tools list request');
-      
+
       return {
         tools: [
           {
@@ -96,9 +93,11 @@ export class MCPSearchServer {
     this.logger.debug('Request handlers configured');
   }
 
-  private async handleSearch(args: unknown): Promise<{ content: Array<{ type: string; text: string }> }> {
+  private async handleSearch(
+    args: unknown,
+  ): Promise<{ content: Array<{ type: string; text: string }> }> {
     this.logger.info('Handling search request', { args });
-    
+
     // 一時的な実装 - 後でSearchServiceに移譲
     return {
       content: [
