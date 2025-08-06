@@ -1,6 +1,21 @@
-// テスト用の環境変数設定
-process.env.OPENAI_API_KEY = 'sk-test-key-for-testing';
-process.env.OPENAI_MODEL = 'gpt-4-o3';
-process.env.TIMEOUT = '30000';
-process.env.MAX_RETRIES = '3';
-process.env.LOG_LEVEL = 'error'; // テスト時はログを抑制
+import { beforeAll, afterAll, beforeEach, vi } from 'vitest';
+
+// テスト環境の設定
+process.env.NODE_ENV = 'test';
+process.env.TEST_MODE = 'true';
+
+// グローバルなタイムアウト設定
+beforeAll(() => {
+  // 必要に応じてグローバルなセットアップを行う
+  console.log('Starting test suite...');
+});
+
+afterAll(() => {
+  // 必要に応じてクリーンアップを行う
+  console.log('Test suite completed.');
+});
+
+beforeEach(() => {
+  // 各テストの前にモックをリセット
+  vi.clearAllMocks();
+});
