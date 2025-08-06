@@ -1,4 +1,4 @@
-import type { ChatCompletions } from 'openai/resources/index.js';
+import type { ChatCompletion } from 'openai/resources/index.js';
 import { vi, beforeEach, afterEach } from 'vitest';
 
 import type { ChatGPTSearchResponse, SearchResult } from '../../src/types/index.js';
@@ -7,9 +7,17 @@ import type { ChatGPTSearchResponse, SearchResult } from '../../src/types/index.
 export function createMockChatCompletion(
   results: SearchResult[],
   totalCount?: number,
-): ChatCompletions.ChatCompletion {
+): ChatCompletion {
+  const responseResults = results.map((result) => ({
+    title: result.title,
+    url: result.url,
+    description: result.snippet, // snippet を description に変換
+    date: result.publishedDate,
+    score: result.relevanceScore,
+  }));
+
   const response: ChatGPTSearchResponse = {
-    results,
+    results: responseResults,
     totalCount: totalCount ?? results.length,
   };
 
@@ -33,7 +41,7 @@ export function createMockChatCompletion(
       completion_tokens: 200,
       total_tokens: 300,
     },
-  } as ChatCompletions.ChatCompletion;
+  } as ChatCompletion;
 }
 
 // テスト用の検索結果を作成
@@ -43,9 +51,9 @@ export function createMockSearchResults(count = 3): SearchResult[] {
     results.push({
       title: `Test Result ${i + 1}`,
       url: `https://example.com/result${i + 1}`,
-      description: `This is test result ${i + 1}`,
-      date: '2024-01-01',
-      score: 0.9 - i * 0.1,
+      snippet: `This is test result ${i + 1}`,
+      publishedDate: '2024-01-01',
+      relevanceScore: 0.9 - i * 0.1,
     });
   }
   return results;
