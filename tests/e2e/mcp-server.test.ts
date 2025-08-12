@@ -218,7 +218,7 @@ describe('MCP Server E2E Tests', () => {
   describe('Search Functionality', () => {
     it('should execute search tool successfully', async () => {
       const response = await client.sendRequest('tools/call', {
-        name: 'chatgpt_o3_search',
+        name: 'openai_search',
         arguments: {
           query: 'TypeScript best practices',
           limit: 5,
@@ -242,7 +242,7 @@ describe('MCP Server E2E Tests', () => {
 
     it('should handle search with different parameters', async () => {
       const response = await client.sendRequest('tools/call', {
-        name: 'chatgpt_o3_search',
+        name: 'openai_search',
         arguments: {
           query: 'React hooks tutorial',
           limit: 3,
@@ -265,7 +265,7 @@ describe('MCP Server E2E Tests', () => {
     it('should handle invalid search parameters', async () => {
       try {
         const response = await client.sendRequest('tools/call', {
-          name: 'chatgpt_o3_search',
+          name: 'openai_search',
           arguments: {
             query: '', // 無効なクエリ
             limit: 100, // 制限を超える値
@@ -336,7 +336,7 @@ describe('MCP Server E2E Tests', () => {
     it('should handle multiple concurrent requests', async () => {
       const requests = Array.from({ length: 5 }, (_, i) =>
         client.sendRequest('tools/call', {
-          name: 'chatgpt_o3_search',
+          name: 'openai_search',
           arguments: {
             query: `concurrent test ${i + 1}`,
             limit: 2,
@@ -369,7 +369,7 @@ describe('MCP Server E2E Tests', () => {
     it('should handle large response data', async () => {
       // より多くの結果を要求
       const response = await client.sendRequest('tools/call', {
-        name: 'chatgpt_o3_search',
+        name: 'openai_search',
         arguments: {
           query: 'comprehensive programming guide',
           limit: 20,

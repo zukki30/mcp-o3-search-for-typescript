@@ -1,12 +1,12 @@
 {
-  "name": "@watanabekazuki/mcp-o3-search",
+  "name": "@watanabekazuki/mcp-openai-search",
   "version": "1.0.0",
-  "description": "MCP server for ChatGPT o3 search functionality",
+  "description": "MCP server for OpenAI search functionality (GPT-o3, GPT-5, etc.)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "bin": {
-    "mcp-o3-search": "./dist/index.js"
+    "mcp-openai-search": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -16,6 +16,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
+    "test:unit": "vitest run tests/unit/",
+    "test:integration": "vitest run tests/integration/",
+    "test:e2e": "vitest run tests/e2e/",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -27,7 +30,8 @@
     "mcp",
     "model-context-protocol",
     "chatgpt",
-    "o3",
+    "gpt-o3",
+    "gpt-5",
     "search",
     "ai",
     "claude",
@@ -67,10 +71,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/watanabekazuki/mcp-o3-search-for-typescript.git"
+    "url": "https://github.com/watanabekazuki/mcp-openai-search-for-typescript.git"
   },
   "bugs": {
-    "url": "https://github.com/watanabekazuki/mcp-o3-search-for-typescript/issues"
+    "url": "https://github.com/watanabekazuki/mcp-openai-search-for-typescript/issues"
   },
-  "homepage": "https://github.com/watanabekazuki/mcp-o3-search-for-typescript#readme"
+  "homepage": "https://github.com/watanabekazuki/mcp-openai-search-for-typescript#readme"
 }

@@ -58,7 +58,7 @@ function setupServerHandlers(server: Server): void {
       arguments: request.params.arguments,
     });
 
-    if (request.params.name === 'chatgpt_o3_search') {
+    if (request.params.name === 'openai_search') {
       return await handleSearch(request.params.arguments);
     }
 
@@ -79,7 +79,7 @@ export function createMCPSearchServer(): Server {
 
   const server = new Server(
     {
-      name: 'mcp-o3-search',
+      name: 'mcp-openai-search',
       version: '1.0.0',
     },
     {

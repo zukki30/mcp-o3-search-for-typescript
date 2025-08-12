@@ -3,8 +3,8 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { SearchParams, SearchResult } from '../types/index.js';
 
 export const searchTool: Tool = {
-  name: 'chatgpt_o3_search',
-  description: 'ChatGPT o3の検索機能を使用してWeb検索を実行します',
+  name: 'openai_search',
+  description: 'OpenAIの検索機能を使用してWeb検索を実行します（GPT-o3, GPT-5等）',
   inputSchema: {
     type: 'object',
     properties: {

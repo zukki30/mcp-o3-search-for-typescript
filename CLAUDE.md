@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-MCP O3 Search Serverは、ChatGPT o3の検索機能をModel Context Protocol（MCP）として提供するTypeScriptサーバーです。Claude Code、Cursor、その他のMCP対応AIエージェントから、ChatGPT o3の強力な検索能力を活用できるようにします。
+MCP OpenAI Search Serverは、OpenAI（GPT-o3、GPT-5など）の検索機能をModel Context Protocol（MCP）として提供するTypeScriptサーバーです。Claude Code、Cursor、その他のMCP対応AIエージェントから、OpenAIの強力な検索能力を活用できるようにします。
 
 ## 技術スタック
 
 - **言語**: TypeScript
 - **ランタイム**: Node.js
 - **プロトコル**: Model Context Protocol (MCP)
-- **API**: OpenAI ChatGPT o3 Search API
+- **API**: OpenAI Search API (GPT-o3, GPT-5, etc.)
 - **開発環境**: ESLint, Prettier, Jest（予定）
 
 ## プロジェクト構造
@@ -23,12 +23,12 @@ MCP O3 Search Serverは、ChatGPT o3の検索機能をModel Context Protocol（M
 ├── src/
 │   ├── server.ts          # MCPサーバーのメインエントリーポイント
 │   ├── tools/
-│   │   └── search.ts      # ChatGPT o3検索ツールの実装
+│   │   └── search.ts      # OpenAI検索ツールの実装
 │   ├── types/
 │   │   └── mcp.ts         # MCP関連の型定義
 │   └── utils/
 │       ├── auth.ts        # OpenAI API認証処理
-│       └── client.ts      # ChatGPT o3 APIクライアント
+│       └── client.ts      # OpenAI APIクライアント
 ├── docs/specs/            # 仕様書ディレクトリ
 └── tests/                 # テストファイル
 ```
@@ -92,13 +92,13 @@ export async function handleExampleTool(args: any) {
 ### エラーハンドリング
 
 - MCP準拠のエラーレスポンス形式を使用
-- ChatGPT o3 API のレート制限に対する適切な対応
+- OpenAI API のレート制限に対する適切な対応
 - ネットワークエラーの再試行ロジック
 
 ### TypeScript型安全性
 
 - MCP SDK の型定義を活用
-- ChatGPT o3 API レスポンスの型定義を作成
+- OpenAI API レスポンスの型定義を作成
 - strict モードでの型チェック
 
 ## MCPサーバー固有の考慮事項
@@ -132,4 +132,4 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => ({
 
 🚧 **開発中** - MCPサーバーの基本実装を進行中
 
-現在、基本的なプロジェクト構造と仕様書が作成済み。実装フェーズに向けてTypeScriptプロジェクトの初期化とMCP SDKの統合が必要。
+現在、基本的なプロジェクト構造と仕様書が作成済み。マルチモデル対応（GPT-o3, GPT-5等）を含む実装フェーズが完了に近づいている。

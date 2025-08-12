@@ -1,4 +1,4 @@
-# MCP O3 Search Server - 実装計画書
+# MCP OpenAI Search Server - 実装計画書
 
 ## 実装スケジュール概要
 
@@ -258,7 +258,7 @@
 
 #### タスク
 1. **パッケージ名の更新**
-   - package.json: `mcp-o3-search` → `mcp-openai-search`
+   - package.json: `mcp-o3-search` → `mcp-openai-search` ✓
    - ツール名: `chatgpt_o3_search` → `openai_search`
 
 2. **ドキュメントの更新**
@@ -309,12 +309,12 @@
    ```json
    // package.json
    {
-     "name": "@your-org/mcp-o3-search",
+     "name": "@your-org/mcp-openai-search",
      "version": "1.0.0",
      "main": "dist/index.js",
      "types": "dist/index.d.ts",
      "bin": {
-       "mcp-o3-search": "./dist/index.js"
+       "mcp-openai-search": "./dist/index.js"
      }
    }
    ```
