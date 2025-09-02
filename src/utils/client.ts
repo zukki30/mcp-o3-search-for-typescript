@@ -1,9 +1,15 @@
 import OpenAI from 'openai';
 
 import config from '../config.js';
-import type { ChatGPTSearchQuery, ChatGPTSearchResponse } from '../types/index.js';
+import type {
+  ChatGPTSearchQuery,
+  ChatGPTSearchResponse,
+  UsageInfo,
+  CostInfo,
+} from '../types/index.js';
 import { AuthError, NetworkError, RateLimitError, TimeoutError } from '../types/index.js';
 
+import { calculateCost } from './cost-calculator.js';
 import { createLogger } from './logger.js';
 
 const logger = createLogger('OpenAIClient');
@@ -67,9 +73,28 @@ function parseSearchResponse(
     }
   });
 
+  // コスト情報を計算（usage情報がある場合）
+  let costInfo: CostInfo | undefined;
+  if (response.usage) {
+    const usage: UsageInfo = {
+      promptTokens: response.usage.prompt_tokens,
+      completionTokens: response.usage.completion_tokens,
+      totalTokens: response.usage.total_tokens,
+    };
+    const calculatedCost = calculateCost(response.model, usage);
+    costInfo = calculatedCost;
+
+    logger.debug('コスト情報を計算しました', {
+      model: response.model,
+      usage,
+      cost: calculatedCost.cost,
+    });
+  }
+
   return {
     results: parsedResponse.results,
     totalCount: parsedResponse.totalCount || parsedResponse.results.length,
+    cost: costInfo,
   };
 }
 

@@ -1,6 +1,7 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 
-import type { SearchParams, SearchResult } from '../types/index.js';
+import type { SearchParams, SearchResult, CostInfo } from '../types/index.js';
+import { formatCostInfo } from '../utils/cost-calculator.js';
 
 export const searchTool: Tool = {
   name: 'openai_search',
@@ -104,15 +105,24 @@ export function validateSearchParams(args: unknown): SearchParams {
   };
 }
 
-export function formatSearchResults(results: SearchResult[]): {
+export function formatSearchResults(
+  results: SearchResult[],
+  costInfo?: CostInfo,
+): {
   content: Array<{ type: string; text: string }>;
 } {
   if (!results || results.length === 0) {
+    let text = '検索結果が見つかりませんでした。';
+
+    if (costInfo) {
+      text += `\n\n**コスト情報:**\n${formatCostInfo(costInfo)}`;
+    }
+
     return {
       content: [
         {
           type: 'text',
-          text: '検索結果が見つかりませんでした。',
+          text,
         },
       ],
     };
@@ -138,7 +148,12 @@ export function formatSearchResults(results: SearchResult[]): {
     })
     .join('\n\n');
 
-  const summary = `検索結果: ${results.length}件\n\n${formattedResults}`;
+  let summary = `検索結果: ${results.length}件\n\n${formattedResults}`;
+
+  // コスト情報があれば追加
+  if (costInfo) {
+    summary += `\n\n**コスト情報:**\n${formatCostInfo(costInfo)}`;
+  }
 
   return {
     content: [

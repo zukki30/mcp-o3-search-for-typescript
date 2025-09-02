@@ -20,11 +20,14 @@ async function handleSearch(
     logger.debug('Validated search parameters', { params });
 
     // 検索の実行（リトライ付き）
-    const results = await searchWithRetry(params, config.maxRetries);
-    logger.info('Search completed', { resultCount: results.length });
+    const { results, costInfo } = await searchWithRetry(params, config.maxRetries);
+    logger.info('Search completed', {
+      resultCount: results.length,
+      cost: costInfo?.cost.totalCost,
+    });
 
-    // 結果のフォーマット
-    return formatSearchResults(results);
+    // 結果のフォーマット（コスト情報含む）
+    return formatSearchResults(results, costInfo);
   } catch (error) {
     logger.error('Search failed', error);
 

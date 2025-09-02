@@ -41,8 +41,8 @@ vi.mock('openai', () => {
       completions: {
         create: vi.fn(),
       },
+      APIError: MockAPIError,
     },
-    APIError: MockAPIError,
   }));
 
   return {
@@ -70,7 +70,7 @@ describe('createOpenAIClient', () => {
   });
 
   describe('search', () => {
-    it('正常な検索リクエストが成功する', async () => {
+    it('正常な検索リクエストが成功し、コスト情報が含まれる', async () => {
       const mockResponse = {
         choices: [
           {
@@ -90,7 +90,11 @@ describe('createOpenAIClient', () => {
             },
           },
         ],
-        usage: { total_tokens: 100 },
+        usage: {
+          prompt_tokens: 100,
+          completion_tokens: 50,
+          total_tokens: 150,
+        },
         model: 'gpt-4-o3',
       };
 
@@ -116,6 +120,20 @@ describe('createOpenAIClient', () => {
           },
         ],
         totalCount: 1,
+        cost: {
+          model: 'gpt-4-o3',
+          usage: {
+            promptTokens: 100,
+            completionTokens: 50,
+            totalTokens: 150,
+          },
+          cost: {
+            inputCost: 0.0003,
+            outputCost: 0.0006,
+            totalCost: 0.0009,
+          },
+          currency: 'USD',
+        },
       });
 
       expect(mockChatCompletions.create).toHaveBeenCalledWith({
@@ -133,6 +151,42 @@ describe('createOpenAIClient', () => {
         temperature: 0.1,
         max_tokens: 4000,
       });
+    });
+
+    it('usage情報がない場合もコストなしで正常に動作する', async () => {
+      const mockResponse = {
+        choices: [
+          {
+            message: {
+              content: `{
+                "results": [
+                  {
+                    "title": "Test Article",
+                    "url": "https://example.com/test",
+                    "description": "Test description"
+                  }
+                ],
+                "totalCount": 1
+              }`,
+            },
+          },
+        ],
+        model: 'gpt-4o',
+      };
+
+      mockChatCompletions.create.mockResolvedValue(mockResponse);
+
+      const client = createOpenAIClient();
+      const query: ChatGPTSearchQuery = {
+        query: 'test',
+        filters: {},
+        maxResults: 10,
+      };
+
+      const result = await client.search(query);
+
+      expect(result.cost).toBeUndefined();
+      expect(result.results).toHaveLength(1);
     });
 
     it('JSON形式でないレスポンスの場合はエラーを投げる', async () => {
@@ -208,7 +262,7 @@ describe('createOpenAIClient', () => {
   describe('エラーハンドリング', () => {
     it('401エラーの場合はAuthErrorを投げる', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const apiError = new (OpenAI as any).APIError('Unauthorized', 401);
+      const apiError = new (MockedOpenAI as any).APIError('Unauthorized', 401);
       mockChatCompletions.create.mockRejectedValue(apiError);
 
       const client = createOpenAIClient();
@@ -219,7 +273,7 @@ describe('createOpenAIClient', () => {
 
     it('429エラーの場合はRateLimitErrorを投げる', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const apiError = new (OpenAI as any).APIError(
+      const apiError = new (MockedOpenAI as any).APIError(
         'Rate limit exceeded',
         429,
         'rate_limit_error',
@@ -243,7 +297,7 @@ describe('createOpenAIClient', () => {
 
     it('500エラーの場合はNetworkErrorを投げる', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const apiError = new (OpenAI as any).APIError('Internal Server Error', 500);
+      const apiError = new (MockedOpenAI as any).APIError('Internal Server Error', 500);
       mockChatCompletions.create.mockRejectedValue(apiError);
 
       const client = createOpenAIClient();
@@ -281,6 +335,99 @@ describe('createOpenAIClient', () => {
       const query: ChatGPTSearchQuery = { query: 'test', filters: {}, maxResults: 10 };
 
       await expect(client.search(query)).rejects.toThrow('予期しないエラー');
+    });
+  });
+
+  describe('コスト情報の計算', () => {
+    it('異なるモデルでコストを正確に計算する', async () => {
+      const mockResponse = {
+        choices: [
+          {
+            message: {
+              content: `{
+                "results": [{
+                  "title": "Test",
+                  "url": "https://test.com",
+                  "description": "Test"
+                }],
+                "totalCount": 1
+              }`,
+            },
+          },
+        ],
+        usage: {
+          prompt_tokens: 1000,
+          completion_tokens: 500,
+          total_tokens: 1500,
+        },
+        model: 'gpt-4o-mini',
+      };
+
+      mockChatCompletions.create.mockResolvedValue(mockResponse);
+
+      const client = createOpenAIClient();
+      const query: ChatGPTSearchQuery = {
+        query: 'test',
+        filters: {},
+        maxResults: 10,
+      };
+
+      const result = await client.search(query);
+
+      expect(result.cost).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(result.cost!.model).toBe('gpt-4o-mini');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(result.cost!.usage.promptTokens).toBe(1000);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(result.cost!.usage.completionTokens).toBe(500);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(result.cost!.cost.totalCost).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(result.cost!.currency).toBe('USD');
+    });
+
+    it('未知のモデルは推測してコストを計算する', async () => {
+      const mockResponse = {
+        choices: [
+          {
+            message: {
+              content: `{
+                "results": [{
+                  "title": "Test",
+                  "url": "https://test.com",
+                  "description": "Test"
+                }],
+                "totalCount": 1
+              }`,
+            },
+          },
+        ],
+        usage: {
+          prompt_tokens: 100,
+          completion_tokens: 50,
+          total_tokens: 150,
+        },
+        model: 'unknown-model-v1',
+      };
+
+      mockChatCompletions.create.mockResolvedValue(mockResponse);
+
+      const client = createOpenAIClient();
+      const query: ChatGPTSearchQuery = {
+        query: 'test',
+        filters: {},
+        maxResults: 10,
+      };
+
+      const result = await client.search(query);
+
+      expect(result.cost).toBeDefined();
+      // 未知のモデルはgpt-4oにフォールバック
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(result.cost!.model).toBe('gpt-4o');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(result.cost!.cost.totalCost).toBeGreaterThan(0);
     });
   });
 });

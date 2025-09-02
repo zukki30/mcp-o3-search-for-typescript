@@ -3,6 +3,7 @@ import type {
   SearchResult,
   ChatGPTSearchQuery,
   ChatGPTSearchResponse,
+  CostInfo,
 } from '../types/index.js';
 import { createOpenAIClient } from '../utils/client.js';
 import { createLogger } from '../utils/logger.js';
@@ -36,7 +37,10 @@ function transformResults(response: ChatGPTSearchResponse, limit?: number): Sear
   return limit ? results.slice(0, limit) : results;
 }
 
-export async function executeSearch(params: SearchParams): Promise<SearchResult[]> {
+export async function executeSearch(params: SearchParams): Promise<{
+  results: SearchResult[];
+  costInfo?: CostInfo;
+}> {
   logger.info('Executing search', {
     query: params.query,
     limit: params.limit,
@@ -54,7 +58,10 @@ export async function executeSearch(params: SearchParams): Promise<SearchResult[
 
     // ChatGPT o3 APIの呼び出し
     const response = await client.search(searchQuery);
-    logger.debug('Received API response', { resultCount: response.results?.length || 0 });
+    logger.debug('Received API response', {
+      resultCount: response.results?.length || 0,
+      costInfo: response.cost,
+    });
 
     // 結果の変換
     const results = transformResults(response, params.limit);
@@ -63,9 +70,13 @@ export async function executeSearch(params: SearchParams): Promise<SearchResult[
       query: params.query,
       resultCount: results.length,
       totalCount: response.totalCount,
+      cost: response.cost?.cost.totalCost,
     });
 
-    return results;
+    return {
+      results,
+      costInfo: response.cost,
+    };
   } catch (error) {
     logger.error('Search execution failed', error);
     throw error;
@@ -75,13 +86,27 @@ export async function executeSearch(params: SearchParams): Promise<SearchResult[
 export async function searchWithRetry(
   params: SearchParams,
   maxRetries = 3,
-): Promise<SearchResult[]> {
+): Promise<{
+  results: SearchResult[];
+  costInfo?: CostInfo;
+}> {
   let lastError: Error;
+  const costInfos: CostInfo[] = [];
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       logger.debug(`Search attempt ${attempt}/${maxRetries}`, { query: params.query });
-      return await executeSearch(params);
+      const result = await executeSearch(params);
+
+      // コスト情報がある場合は集計して返す
+      if (result.costInfo) {
+        costInfos.push(result.costInfo);
+      }
+
+      return {
+        results: result.results,
+        costInfo: result.costInfo,
+      };
     } catch (error) {
       lastError = error as Error;
       logger.warn(`Search attempt ${attempt} failed`, {
@@ -102,6 +127,7 @@ export async function searchWithRetry(
   logger.error('All search attempts failed', {
     maxRetries,
     finalError: lastError!.message,
+    totalCosts: costInfos.length,
   });
   throw lastError!;
 }

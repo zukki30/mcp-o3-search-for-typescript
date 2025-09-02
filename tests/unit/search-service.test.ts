@@ -16,7 +16,13 @@ vi.mock('../../src/utils/client.js', () => ({
 }));
 
 import { executeSearch, searchWithRetry } from '../../src/services/search.js';
-import type { SearchParams, SearchResult, ChatGPTSearchResponse } from '../../src/types/index.js';
+import type {
+  SearchParams,
+  SearchResult,
+  ChatGPTSearchResponse,
+  CostInfo,
+  UsageInfo,
+} from '../../src/types/index.js';
 import { createOpenAIClient } from '../../src/utils/client.js';
 
 const mockClient = {
@@ -36,6 +42,23 @@ describe('executeSearch', () => {
       language: 'ja',
     };
 
+    const mockUsage: UsageInfo = {
+      promptTokens: 100,
+      completionTokens: 50,
+      totalTokens: 150,
+    };
+
+    const mockCostInfo: CostInfo = {
+      model: 'gpt-4-o3',
+      usage: mockUsage,
+      cost: {
+        inputCost: 0.0003,
+        outputCost: 0.0006,
+        totalCost: 0.0009,
+      },
+      currency: 'USD',
+    };
+
     const mockResponse: ChatGPTSearchResponse = {
       results: [
         {
@@ -47,11 +70,12 @@ describe('executeSearch', () => {
         },
       ],
       totalCount: 1,
+      cost: mockCostInfo,
     };
 
     mockClient.search.mockResolvedValue(mockResponse);
 
-    const results = await executeSearch(params);
+    const result = await executeSearch(params);
 
     expect(mockClient.search).toHaveBeenCalledWith({
       query: 'TypeScript tutorial',
@@ -62,15 +86,18 @@ describe('executeSearch', () => {
       maxResults: 5,
     });
 
-    expect(results).toEqual([
-      {
-        title: 'TypeScript入門',
-        url: 'https://example.com/typescript',
-        snippet: 'TypeScriptの基本を学ぼう',
-        publishedDate: '2024-01-01',
-        relevanceScore: 0.9,
-      },
-    ]);
+    expect(result).toEqual({
+      results: [
+        {
+          title: 'TypeScript入門',
+          url: 'https://example.com/typescript',
+          snippet: 'TypeScriptの基本を学ぼう',
+          publishedDate: '2024-01-01',
+          relevanceScore: 0.9,
+        },
+      ],
+      costInfo: mockCostInfo,
+    });
   });
 
   it('結果がlimitで制限される', async () => {
@@ -90,8 +117,8 @@ describe('executeSearch', () => {
 
     mockClient.search.mockResolvedValue(mockResponse);
 
-    const results = await executeSearch(params);
-    expect(results).toHaveLength(2);
+    const result = await executeSearch(params);
+    expect(result.results).toHaveLength(2);
   });
 
   it('APIエラーの場合は例外を投げる', async () => {
@@ -117,8 +144,8 @@ describe('executeSearch', () => {
 
     mockClient.search.mockResolvedValue(mockResponse);
 
-    const results = await executeSearch(params);
-    expect(results).toEqual([]);
+    const result = await executeSearch(params);
+    expect(result.results).toEqual([]);
   });
 
   it('必須フィールドが不足している結果を処理する', async () => {
@@ -139,8 +166,8 @@ describe('executeSearch', () => {
 
     mockClient.search.mockResolvedValue(mockResponse);
 
-    const results = await executeSearch(params);
-    expect(results).toEqual([
+    const result = await executeSearch(params);
+    expect(result.results).toEqual([
       {
         title: 'タイトルなし',
         url: 'https://example.com/test',
@@ -171,9 +198,9 @@ describe('searchWithRetry', () => {
 
     mockClient.search.mockResolvedValue(mockResponse);
 
-    const results = await searchWithRetry(params, 3);
+    const result = await searchWithRetry(params, 3);
 
-    expect(results).toEqual(expectedResults);
+    expect(result.results).toEqual(expectedResults);
     expect(mockClient.search).toHaveBeenCalledTimes(1);
   });
 
@@ -188,10 +215,10 @@ describe('searchWithRetry', () => {
         totalCount: 1,
       });
 
-    const results = await searchWithRetry(params, 3);
+    const result = await searchWithRetry(params, 3);
 
-    expect(results).toHaveLength(1);
-    expect(results[0]?.title).toBe('Success');
+    expect(result.results).toHaveLength(1);
+    expect(result.results[0]?.title).toBe('Success');
     expect(mockClient.search).toHaveBeenCalledTimes(3);
   });
 

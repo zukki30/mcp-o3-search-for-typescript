@@ -22,6 +22,23 @@ export interface ChatGPTSearchQuery {
   maxResults: number;
 }
 
+export interface UsageInfo {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
+export interface CostInfo {
+  model: string;
+  usage: UsageInfo;
+  cost: {
+    inputCost: number; // USD
+    outputCost: number; // USD
+    totalCost: number; // USD
+  };
+  currency: string;
+}
+
 export interface ChatGPTSearchResponse {
   results: Array<{
     title: string;
@@ -31,6 +48,7 @@ export interface ChatGPTSearchResponse {
     score?: number;
   }>;
   totalCount: number;
+  cost?: CostInfo;
 }
 
 export interface MCPErrorResponse {
