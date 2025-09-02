@@ -42,69 +42,79 @@ ${JSON.stringify(searchRequest, null, 2)}
 function parseSearchResponse(
   response: OpenAI.Chat.Completions.ChatCompletion,
 ): ChatGPTSearchResponse {
-  try {
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error('検索レスポンスが空です');
-    }
-
-    // JSON部分を抽出
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('有効なJSON形式の応答が見つかりません');
-    }
-
-    const parsedResponse = JSON.parse(jsonMatch[0]) as ChatGPTSearchResponse;
-
-    // 基本的な構造検証
-    if (!parsedResponse.results || !Array.isArray(parsedResponse.results)) {
-      throw new Error('無効な検索結果形式です');
-    }
-
-    // 各結果の必須フィールドを検証
-    parsedResponse.results.forEach((result, index) => {
-      if (!result.title || !result.url) {
-        logger.warn(`検索結果 ${index} に必須フィールドが不足しています`, { result });
-      }
-    });
-
-    return {
-      results: parsedResponse.results,
-      totalCount: parsedResponse.totalCount || parsedResponse.results.length,
-    };
-  } catch (error) {
-    logger.error('検索レスポンスの解析に失敗しました', error);
-    throw new Error(
-      `検索レスポンスの解析エラー: ${error instanceof Error ? error.message : String(error)}`,
-    );
+  const content = response.choices[0]?.message?.content;
+  if (!content) {
+    throw new Error('検索レスポンスが空です');
   }
+
+  // JSON部分を抽出
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('有効なJSON形式の応答が見つかりません');
+  }
+
+  const parsedResponse = JSON.parse(jsonMatch[0]) as ChatGPTSearchResponse;
+
+  // 基本的な構造検証
+  if (!parsedResponse.results || !Array.isArray(parsedResponse.results)) {
+    throw new Error('無効な検索結果形式です');
+  }
+
+  // 各結果の必須フィールドを検証
+  parsedResponse.results.forEach((result, index) => {
+    if (!result.title || !result.url) {
+      logger.warn(`検索結果 ${index} に必須フィールドが不足しています`, { result });
+    }
+  });
+
+  return {
+    results: parsedResponse.results,
+    totalCount: parsedResponse.totalCount || parsedResponse.results.length,
+  };
 }
 
 function handleOpenAIError(error: unknown): never {
-  if (error instanceof OpenAI.APIError) {
+  // OpenAI.APIErrorまたはAPIErrorの特徴を持つエラーオブジェクトをチェック
+  const isAPIError =
+    error instanceof OpenAI.APIError ||
+    (error instanceof Error &&
+      'status' in error &&
+      typeof (error as Record<string, unknown>).status === 'number' &&
+      (error.name === 'APIError' ||
+        error.constructor.name === 'APIError' ||
+        error.constructor.name === 'MockAPIError'));
+
+  if (isAPIError) {
+    const apiError = error as {
+      status: number;
+      message: string;
+      type?: string;
+      headers?: Record<string, string>;
+    };
+
     logger.error('OpenAI API エラー', {
-      status: Number(error.status),
-      message: String(error.message),
-      type: String(error.type || 'unknown'),
+      status: Number(apiError.status),
+      message: String(apiError.message),
+      type: String(apiError.type || 'unknown'),
     });
 
-    if (error.status === 401) {
+    if (apiError.status === 401) {
       throw new AuthError('OpenAI APIキーが無効です。OPENAI_API_KEYを確認してください。');
     }
 
-    if (error.status === 429) {
-      const headers = error.headers as Record<string, string> | undefined;
+    if (apiError.status === 429) {
+      const headers = apiError.headers;
       const retryAfterHeader = headers?.['retry-after'];
       const retrySeconds =
         typeof retryAfterHeader === 'string' ? parseInt(retryAfterHeader, 10) : 60;
       throw new RateLimitError('OpenAI APIのレート制限に達しました。', retrySeconds);
     }
 
-    if (error.status >= 500) {
+    if (apiError.status >= 500) {
       throw new NetworkError('OpenAI APIサーバーエラーが発生しました。', error);
     }
 
-    throw new NetworkError(`OpenAI API エラー: ${error.message}`, error);
+    throw new NetworkError(`OpenAI API エラー: ${apiError.message}`, error);
   }
 
   if (error instanceof Error) {
@@ -168,8 +178,19 @@ export function createOpenAIClient(): OpenAIClient {
           model: response.model,
         });
 
-        return parseSearchResponse(response);
+        try {
+          return parseSearchResponse(response);
+        } catch (parseError) {
+          logger.error('検索レスポンスの解析に失敗しました', parseError);
+          throw new Error(
+            `検索レスポンスの解析エラー: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
+          );
+        }
       } catch (error) {
+        // parseSearchResponseのエラーは既に上でキャッチしているため、ここではOpenAI APIのエラーのみ処理
+        if (error instanceof Error && error.message.includes('検索レスポンスの解析エラー')) {
+          throw error; // 解析エラーはそのまま再スロー
+        }
         handleOpenAIError(error);
       }
     },

@@ -46,7 +46,7 @@ export class MCPSearchServer {
   constructor() {
     this.server = new Server(
       {
-        name: 'mcp-o3-search',
+        name: 'mcp-openai-search',
         version: '1.0.0',
       },
       {
@@ -68,7 +68,7 @@ export class MCPSearchServer {
 
     // ツール実行
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      if (request.params.name === 'chatgpt_o3_search') {
+      if (request.params.name === 'openai_search') {
         return await this.handleSearch(request.params.arguments);
       }
       throw new Error(`Unknown tool: ${request.params.name}`);
@@ -88,7 +88,7 @@ export class MCPSearchServer {
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 
 export const searchTool: Tool = {
-  name: 'chatgpt_o3_search',
+  name: 'openai_search',
   description: 'ChatGPT o3の検索機能を使用してWeb検索を実行します',
   inputSchema: {
     type: 'object',
@@ -437,7 +437,7 @@ export class RetryManager {
 ```
 1. MCPクライアント → MCPサーバー
    - tools/call リクエスト
-   - ツール名: chatgpt_o3_search
+   - ツール名: openai_search
    - パラメータ: { query, limit, language, timeframe }
 
 2. MCPサーバー → SearchService

@@ -8,9 +8,9 @@
 ```json
 {
   "mcpServers": {
-    "mcp-o3-search": {
+    "mcp-openai-search": {
       "command": "node",
-      "args": ["/path/to/mcp-o3-search-server/dist/index.js"],
+      "args": ["/path/to/mcp-openai-search-server/dist/index.js"],
       "env": {
         "OPENAI_API_KEY": "sk-your-api-key-here"
       }
@@ -27,7 +27,7 @@ User: TypeScript 5.5の新機能について検索して
 
 Claude: ChatGPT o3で検索します...
 
-[検索ツールを実行: chatgpt_o3_search]
+[検索ツールを実行: openai_search]
 Query: "TypeScript 5.5 new features"
 Language: "ja"
 
@@ -48,7 +48,7 @@ Language: "ja"
       "servers": {
         "o3-search": {
           "command": "npx",
-          "args": ["@your-org/mcp-o3-search"],
+          "args": ["@your-org/mcp-openai-search"],
           "env": {
             "OPENAI_API_KEY": "${env:OPENAI_API_KEY}"
           }
@@ -80,7 +80,7 @@ Cursor: MCP O3 Search を使用して検索します...
 User: "Next.js 14のApp Routerのベストプラクティスを調べて"
 
 // Claude CodeがMCPツールを自動的に使用
-await callTool("chatgpt_o3_search", {
+await callTool("openai_search", {
   query: "Next.js 14 App Router best practices",
   limit: 10,
   language: "ja",
@@ -98,7 +98,7 @@ Claude: Next.js 14のApp Routerのベストプラクティスをまとめます�
 User: "TypeError: Cannot read property 'map' of undefined エラーの解決方法"
 
 // MCPツールで関連情報を検索
-await callTool("chatgpt_o3_search", {
+await callTool("openai_search", {
   query: "TypeError Cannot read property map undefined React",
   limit: 5
 });
@@ -112,7 +112,7 @@ Claude: このエラーの一般的な原因と解決方法：
 ```typescript
 User: "2024年のJavaScriptフレームワークのトレンド"
 
-await callTool("chatgpt_o3_search", {
+await callTool("openai_search", {
   query: "JavaScript framework trends 2024",
   timeframe: "recent",
   limit: 15
@@ -128,23 +128,23 @@ Claude: 2024年のJavaScriptフレームワークの最新トレンド：
 #### グローバルインストール（推奨）
 ```bash
 # npmでインストール
-npm install -g @your-org/mcp-o3-search
+npm install -g @your-org/mcp-openai-search
 
 # 環境変数設定
 export OPENAI_API_KEY="sk-your-api-key"
 
 # 動作確認
-mcp-o3-search --version
+mcp-openai-search --version
 ```
 
 #### プロジェクトローカルインストール
 ```bash
 # プロジェクトディレクトリで
-npm install @your-org/mcp-o3-search
+npm install @your-org/mcp-openai-search
 
 # package.jsonにスクリプト追加
 "scripts": {
-  "mcp-server": "mcp-o3-search"
+  "mcp-server": "mcp-openai-search"
 }
 ```
 
@@ -158,13 +158,13 @@ OPENAI_MODEL=gpt-4-turbo \
 TIMEOUT=60000 \
 MAX_RETRIES=5 \
 LOG_LEVEL=debug \
-mcp-o3-search
+mcp-openai-search
 ```
 
 #### プログラマティックな使用
 ```typescript
 // 他のMCPサーバーと組み合わせて使用
-import { MCPSearchServer } from '@your-org/mcp-o3-search';
+import { MCPSearchServer } from '@your-org/mcp-openai-search';
 
 const server = new MCPSearchServer({
   openaiKey: process.env.OPENAI_API_KEY,
@@ -201,7 +201,7 @@ Error: Search timeout
 
 ### 7. パラメータ詳細
 
-#### chatgpt_o3_searchツールのパラメータ
+#### openai_searchツールのパラメータ
 
 | パラメータ | 型 | 必須 | デフォルト | 説明 |
 |-----------|-----|------|------------|------|

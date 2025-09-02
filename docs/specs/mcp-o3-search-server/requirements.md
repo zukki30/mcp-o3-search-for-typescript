@@ -9,7 +9,7 @@ ChatGPT o3の検索機能をModel Context Protocol（MCP）として提供する
 ### 1. MCP検索ツール
 
 #### 基本検索機能
-- **ツール名**: `chatgpt_o3_search`
+- **ツール名**: `openai_search`
 - **入力パラメータ**:
   - `query` (string, 必須): 検索クエリ
   - `limit` (number, オプション): 結果の最大数（デフォルト: 10）

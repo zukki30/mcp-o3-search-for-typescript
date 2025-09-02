@@ -287,8 +287,8 @@
 
 #### タスク
 1. **パッケージ名の更新**
-   - package.json: `mcp-o3-search` → `mcp-openai-search` ✓
-   - ツール名: `chatgpt_o3_search` → `openai_search`
+   - package.json: `mcp-openai-search` → `mcp-openai-search` ✓
+   - ツール名: `openai_search` → `openai_search`
 
 2. **ドキュメントの更新**
    - README.md の全面改訂

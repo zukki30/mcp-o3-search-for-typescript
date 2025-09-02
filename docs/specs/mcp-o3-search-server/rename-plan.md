@@ -1,7 +1,7 @@
 # プロジェクト名変更計画
 
 ## 変更内容
-`mcp-o3-search` → `mcp-openai-search`
+`mcp-openai-search` → `mcp-openai-search`
 
 ## 変更理由
 - ChatGPT 5など、o3以外のモデルもサポート
@@ -22,7 +22,7 @@
 - [ ] 使用例のコマンド
 
 ### 3. コード内の参照
-- [ ] ツール名 `chatgpt_o3_search` → `openai_search`
+- [ ] ツール名 `openai_search` → `openai_search`
 - [ ] ログメッセージ
 - [ ] エラーメッセージ
 - [ ] コメント
@@ -51,8 +51,8 @@ npm install # package-lock.json の再生成
 ### Phase 2: コード内の参照更新
 ```bash
 # 一括置換（慎重に実行）
-find . -type f -name "*.ts" -o -name "*.md" | xargs sed -i '' 's/mcp-o3-search/mcp-openai-search/g'
-find . -type f -name "*.ts" -o -name "*.md" | xargs sed -i '' 's/chatgpt_o3_search/openai_search/g'
+find . -type f -name "*.ts" -o -name "*.md" | xargs sed -i '' 's/mcp-openai-search/mcp-openai-search/g'
+find . -type f -name "*.ts" -o -name "*.md" | xargs sed -i '' 's/openai_search/openai_search/g'
 ```
 
 ### Phase 3: ドキュメント更新
@@ -77,7 +77,7 @@ npm run build
 // 旧名称もサポート（非推奨）
 export const searchTool: Tool = {
   name: 'openai_search', // 新名称
-  // aliases: ['chatgpt_o3_search'], // 将来的に削除
+  // aliases: ['openai_search'], // 将来的に削除
 };
 ```
 

@@ -16,7 +16,7 @@ vi.mock('../../src/config.js', () => ({
 }));
 
 vi.mock('openai', () => {
-  // OpenAI APIError モッククラス
+  // OpenAI APIError をモックするクラス
   class MockAPIError extends Error {
     status: number;
     type: string;
@@ -36,9 +36,17 @@ vi.mock('openai', () => {
     }
   }
 
-  return {
-    default: vi.fn(),
+  const MockedOpenAI = vi.fn().mockImplementation(() => ({
+    chat: {
+      completions: {
+        create: vi.fn(),
+      },
+    },
     APIError: MockAPIError,
+  }));
+
+  return {
+    default: MockedOpenAI,
   };
 });
 

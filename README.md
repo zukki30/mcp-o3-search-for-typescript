@@ -1,14 +1,15 @@
-# MCP O3 Search Server
+# MCP OpenAI Search Server
 
-ChatGPT o3の検索機能をClaude CodeやCursorなどのAIエージェントで利用するためのMCP（Model Context Protocol）サーバー
+OpenAIの検索機能（GPT-o3, GPT-5等）をClaude CodeやCursorなどのAIエージェントで利用するためのMCP（Model Context Protocol）サーバー
 
 ## 概要
 
-このプロジェクトは、ChatGPT o3のSearch機能をModel Context Protocol（MCP）として提供するTypeScriptサーバーです。Claude Code、Cursor、その他のMCP対応AIエージェントから、ChatGPT o3の強力な検索能力を活用できるようになります。
+このプロジェクトは、OpenAIの複数のモデル（ChatGPT o3、ChatGPT 5など）のSearch機能をModel Context Protocol（MCP）として提供するTypeScriptサーバーです。Claude Code、Cursor、その他のMCP対応AIエージェントから、OpenAIの強力な検索能力を活用できるようになります。
 
 ## 主な機能
 
-- **ChatGPT o3 Search統合**: ChatGPT o3の検索APIをMCPツールとして提供
+- **マルチモデル対応**: GPT-o3、GPT-5等の複数OpenAIモデルに対応
+- **OpenAI Search統合**: OpenAI検索APIをMCPツールとして提供
 - **リアルタイム検索**: Web検索、リアルタイム情報取得、専門的な検索クエリに対応
 - **MCPプロトコル準拠**: 標準的なMCPインターフェースによる互換性確保
 - **型安全**: TypeScriptによる堅牢な型定義とエラーハンドリング
